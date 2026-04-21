@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+htmlcov/
+.coverage
+ml/fraud_model.joblib
+ml/training_data.csv
+*.joblib
+*.pkl
+.vscode/
+.idea/
+dist/
+build/
+*.egg-info/
