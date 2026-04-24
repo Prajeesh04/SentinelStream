@@ -1,0 +1,16 @@
+import math
+
+
+def haversine_distance(lat1, lng1, lat2, lng2) -> float:
+    """Calculate distance in km between two lat/lng points using Haversine formula."""
+    if any(v is None for v in [lat1, lng1, lat2, lng2]):
+        return 0.0
+    R = 6371  # Earth radius in km
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+    )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
