@@ -1,4 +1,3 @@
-import time
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -10,6 +9,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Only rate-limit API endpoints
         if not request.url.path.startswith('/api/'):
+            return await call_next(request)
+
+        # Allow load testing in debug mode without tripping per-IP limits.
+        # This is opt-in via header so normal clients still get rate-limited.
+        if settings.DEBUG and request.headers.get('X-Load-Test') == '1':
             return await call_next(request)
 
         client_ip = request.client.host if request.client else 'unknown'
