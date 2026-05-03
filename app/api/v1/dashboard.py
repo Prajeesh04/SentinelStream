@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.sql import functions as sqlfunc
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.transaction import Transaction
+from sqlalchemy import select, func, case
 
 router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
+
 
 
 @router.get('/stats')
@@ -16,36 +16,24 @@ async def get_stats(
     current_user: User = Depends(get_current_user),
 ):
     uid = current_user.id
-    txn_for_user = Transaction.user_id == uid
+    #txn_for_user = Transaction.user_id == uid
 
-    total = await db.execute(select(sqlfunc.count(Transaction.id)).where(txn_for_user))
-    total_count = total.scalar_one()
-
-    approved = await db.execute(
-    select(sqlfunc.count(Transaction.id)).where(
-        (txn_for_user) & (Transaction.status == 'APPROVED')
+    result = await db.execute(
+        select(
+            func.count(Transaction.id),
+            func.sum(case((Transaction.status == 'APPROVED', 1), else_=0)),
+            func.sum(case((Transaction.status == 'FLAGGED', 1), else_=0)),
+            func.sum(case((Transaction.status == 'DECLINED', 1), else_=0)),
+            func.avg(Transaction.risk_score)
+        ).where(Transaction.user_id == uid)
     )
-)
 
-    flagged = await db.execute(
-    select(sqlfunc.count(Transaction.id)).where(
-        (txn_for_user) & (Transaction.status == 'FLAGGED')
-    )
-)
-
-    declined = await db.execute(
-    select(sqlfunc.count(Transaction.id)).where(
-        (txn_for_user) & (Transaction.status == 'DECLINED')
-    )
-)
-    avg_risk = await db.execute(
-    select(sqlfunc.avg(Transaction.risk_score)).where(txn_for_user)
-)
+    total, approved, flagged, declined, avg_risk = result.one()
 
     return {
-    'total_transactions': total_count,
-    'approved': approved.scalar(),
-    'flagged': flagged.scalar(),
-    'declined': declined.scalar(),
-    'avg_risk_score': float(avg_risk.scalar() or 0),
-	}
+        'total_transactions': total or 0,
+        'approved': approved or 0,
+        'flagged': flagged or 0,
+        'declined': declined or 0,
+        'avg_risk_score': float(avg_risk or 0),
+    }
