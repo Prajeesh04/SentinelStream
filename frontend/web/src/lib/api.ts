@@ -44,6 +44,11 @@ function apiBase(): string {
   return (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 }
 
+/** Bypass rate limits only during `npm run dev` (never in production builds). */
+function loadTestHeaders(): Record<string, string> {
+  return import.meta.env.DEV ? { "X-Load-Test": "1" } : {};
+}
+
 async function readError(res: Response): Promise<string> {
   const ct = res.headers.get("content-type") ?? "";
   try {
@@ -60,7 +65,7 @@ async function readError(res: Response): Promise<string> {
 export async function signIn(email: string, password: string): Promise<TokenResponse> {
   const res = await fetch(`${apiBase()}/api/v1/auth/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Load-Test": "1" },
+    headers: { "Content-Type": "application/json", ...loadTestHeaders() },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) throw new Error(await readError(res));
@@ -70,7 +75,7 @@ export async function signIn(email: string, password: string): Promise<TokenResp
 export async function signUp(email: string, password: string): Promise<TokenResponse> {
   const res = await fetch(`${apiBase()}/api/v1/auth/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Load-Test": "1" },
+    headers: { "Content-Type": "application/json", ...loadTestHeaders() },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) throw new Error(await readError(res));
@@ -79,7 +84,7 @@ export async function signUp(email: string, password: string): Promise<TokenResp
 
 export async function fetchDashboardStats(accessToken: string): Promise<DashboardStats> {
   const res = await fetch(`${apiBase()}/api/v1/dashboard/stats`, {
-    headers: { Authorization: `Bearer ${accessToken}`, "X-Load-Test": "1" },
+    headers: { Authorization: `Bearer ${accessToken}`, ...loadTestHeaders() },
   });
   if (!res.ok) throw new Error(await readError(res));
   return (await res.json()) as DashboardStats;
@@ -87,7 +92,7 @@ export async function fetchDashboardStats(accessToken: string): Promise<Dashboar
 
 export async function fetchTransactions(accessToken: string, limit = 25): Promise<TransactionRow[]> {
   const res = await fetch(`${apiBase()}/api/v1/transactions/?limit=${encodeURIComponent(limit)}`, {
-    headers: { Authorization: `Bearer ${accessToken}`, "X-Load-Test": "1" },
+    headers: { Authorization: `Bearer ${accessToken}`, ...loadTestHeaders() },
   });
   if (!res.ok) throw new Error(await readError(res));
   return (await res.json()) as TransactionRow[];
@@ -103,7 +108,7 @@ export async function submitTransaction(accessToken: string, txn: Omit<Transacti
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
       "Idempotency-Key": crypto.randomUUID(),
-      "X-Load-Test": "1",
+      ...loadTestHeaders(),
     },
     body: JSON.stringify({
       user_id: userId,

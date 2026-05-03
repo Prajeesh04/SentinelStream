@@ -70,7 +70,7 @@ export function DashboardPage() {
           <div className="rowBetween">
             <div>
               <div className="h2">System overview</div>
-              <div className="muted">Real-time decisions, rules + ML, under tight latency budgets.</div>
+              <div className="muted">Your transaction metrics (signed-in account only).</div>
             </div>
             <button className="ghostBtn" onClick={() => void refresh()}>
               Refresh
