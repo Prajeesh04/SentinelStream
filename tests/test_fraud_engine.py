@@ -17,7 +17,7 @@ async def test_fraud_engine_decline_by_rule():
     txn.location_lat = None
     txn.location_lng = None
 
-    engine.rule_engine.evaluate = AsyncMock(return_value={'name': 'high_amount', 'action': 'DECLINE', 'field': 'amount', 'operator': '>', 'threshold_value': '5000'})
+    engine.rule_engine.evaluate = AsyncMock(return_value={'name': 'high_amount', 'action': 'DECLINE'})
 
     user_profile = {'home_lat': None, 'home_lng': None}
     decision = await engine.analyze(txn, user_profile)
@@ -36,7 +36,7 @@ async def test_fraud_engine_flag_by_rule():
     txn.location_lat = None
     txn.location_lng = None
 
-    engine.rule_engine.evaluate = AsyncMock(return_value={'name': 'gambling', 'action': 'FLAG', 'field': 'merchant_category', 'operator': '=', 'threshold_value': 'gambling'})
+    engine.rule_engine.evaluate = AsyncMock(return_value={'name': 'gambling', 'action': 'FLAG'})
 
     user_profile = {'home_lat': None, 'home_lng': None}
     decision = await engine.analyze(txn, user_profile)

@@ -5,7 +5,7 @@ import uuid
 async def _register_and_get_token_and_uid(client):
     """Helper: register a unique user, return (token, user_id)."""
     email = f'txn_{uuid.uuid4().hex[:8]}@test.com'
-    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
+    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass'})
     token = reg.json()['access_token']
     from app.core.security import decode_token
     payload = decode_token(token)
