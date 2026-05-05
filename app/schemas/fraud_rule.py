@@ -1,13 +1,13 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Literal
 
 
 class FraudRuleCreate(BaseModel):
     name: str
     field_name: str
-    operator: str
+    operator: Literal['>', '<', '==', '>=', '<=', '!=']
     threshold_value: str
-    action: str = 'FLAG'
+    action: Literal['FLAG', 'BLOCK', 'REVIEW'] = 'FLAG'
     priority: int = 1
     is_active: bool = True
 
@@ -22,5 +22,4 @@ class FraudRuleResponse(BaseModel):
     priority: int
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

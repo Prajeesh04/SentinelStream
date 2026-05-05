@@ -1,13 +1,12 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, ConfigDict
+from typing import Optional, Literal
 import uuid
 
 
 class UserResponse(BaseModel):
     id: uuid.UUID
-    email: str
-    role: str
+    email: EmailStr
+    role: Literal['user', 'admin']
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

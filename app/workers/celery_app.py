@@ -6,6 +6,7 @@ celery_app = Celery(
     'sentinelstream',
     broker=os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/1'),
     backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/2'),
+    include=['app.workers.tasks']
 )
 celery_app.conf.update(
     task_serializer='json',

@@ -5,6 +5,8 @@ import { SignInPage } from "./views/SignInPage";
 import { SignUpPage } from "./views/SignUpPage";
 import { DashboardPage } from "./views/DashboardPage";
 import { RequireAuth } from "./views/RequireAuth";
+import { AdminLogin } from "./views/AdminLogin";
+import { AdminDashboard } from "./views/AdminDashboard";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,15 @@ export const router = createBrowserRouter([
   },
   { path: "/signin", element: <SignInPage /> },
   { path: "/signup", element: <SignUpPage /> },
+  { path: "/admin/login", element: <AdminLogin /> },
+  { 
+    path: "/admin", 
+    element: (
+      <RequireAuth>
+        <AdminDashboard />
+      </RequireAuth>
+    ) 
+  },
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
 

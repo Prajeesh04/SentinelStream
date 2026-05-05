@@ -61,7 +61,7 @@ async def submit_transaction(
 
     return TransactionResponse(
         transaction_id=txn.id, status=result.status,
-        risk_score=float(result.risk_score), reason=result.reason,
+        risk_score=float(result.risk_score), decline_reason=result.reason,
         rule_triggered=result.rule_triggered, processing_time_ms=ms,
     )
 

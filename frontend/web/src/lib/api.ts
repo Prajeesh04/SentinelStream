@@ -72,11 +72,11 @@ export async function signIn(email: string, password: string): Promise<TokenResp
   return (await res.json()) as TokenResponse;
 }
 
-export async function signUp(email: string, password: string): Promise<TokenResponse> {
+export async function signUp(email: string, password: string, confirm_password: string): Promise<TokenResponse> {
   const res = await fetch(`${apiBase()}/api/v1/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...loadTestHeaders() },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, confirm_password }),
   });
   if (!res.ok) throw new Error(await readError(res));
   return (await res.json()) as TokenResponse;
@@ -120,3 +120,18 @@ export async function submitTransaction(accessToken: string, txn: Omit<Transacti
   return res.json();
 }
 
+export async function fetchAdminStats(accessToken: string) {
+  const res = await fetch(`${apiBase()}/api/v1/admin/stats`, {
+    headers: { Authorization: `Bearer ${accessToken}`, ...loadTestHeaders() },
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return await res.json();
+}
+
+export async function fetchAdminTransactions(accessToken: string, limit = 100): Promise<TransactionRow[]> {
+  const res = await fetch(`${apiBase()}/api/v1/admin/transactions?limit=${encodeURIComponent(limit)}`, {
+    headers: { Authorization: `Bearer ${accessToken}`, ...loadTestHeaders() },
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as TransactionRow[];
+}

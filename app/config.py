@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     ML_RISK_THRESHOLD: float = 0.7
     RATE_LIMIT_PER_MINUTE: int = 1000
     ALLOWED_ORIGINS: str = 'http://localhost:3000'
+    ADMIN_EMAIL: str = 'admin@sentinelstream.com'
+    ADMIN_PASSWORD: str = 'SecureAdminPassword123!'
 
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod

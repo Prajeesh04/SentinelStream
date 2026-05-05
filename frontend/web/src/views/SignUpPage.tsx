@@ -27,7 +27,7 @@ export function SignUpPage() {
     }
     setLoading(true);
     try {
-      const tok = await signUp(email.trim(), password);
+      const tok = await signUp(email.trim(), password, confirm);
       setAccessToken(tok.access_token, { persist: true });
       navigate("/", { replace: true });
     } catch (err) {
