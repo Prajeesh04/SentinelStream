@@ -4,14 +4,14 @@ import uuid
 
 async def test_register_success(client):
     email = f'new_{uuid.uuid4().hex[:8]}@test.com'
-    r = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass123'})
+    r = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
     assert r.status_code == 200
     assert 'access_token' in r.json()
 
 
 async def test_login_wrong_password(client):
     email = f'user_{uuid.uuid4().hex[:8]}@test.com'
-    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'correct'})
+    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'correct_pass', 'confirm_password': 'correct_pass'})
     r = await client.post('/api/v1/auth/token', json={'email': email, 'password': 'wrong'})
     assert r.status_code == 401
 
@@ -26,8 +26,8 @@ async def test_transaction_without_auth(client):
 
 async def test_duplicate_email_registration(client):
     email = f'dup_{uuid.uuid4().hex[:8]}@test.com'
-    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass123'})
-    r = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass123'})
+    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
+    r = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
     assert r.status_code == 400
 
 
@@ -39,8 +39,8 @@ async def test_health_endpoint(client):
 
 async def test_login_success(client):
     email = f'login_{uuid.uuid4().hex[:8]}@test.com'
-    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass123'})
-    r = await client.post('/api/v1/auth/token', json={'email': email, 'password': 'pass123'})
+    await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
+    r = await client.post('/api/v1/auth/token', json={'email': email, 'password': 'pass1234'})
     assert r.status_code == 200
     data = r.json()
     assert 'access_token' in data

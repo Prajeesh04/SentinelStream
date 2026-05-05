@@ -84,7 +84,7 @@ async def test_dashboard_stats(client):
 
 async def test_rules_list(client):
     email = f'rules_{uuid.uuid4().hex[:8]}@test.com'
-    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass'})
+    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
     token = reg.json()['access_token']
     r = await client.get('/api/v1/rules/', headers={'Authorization': f'Bearer {token}'})
     assert r.status_code == 200
@@ -93,7 +93,7 @@ async def test_rules_list(client):
 
 async def test_dashboard_stats_authenticated(client):
     email = f'dash_{uuid.uuid4().hex[:8]}@test.com'
-    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass'})
+    reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass1234', 'confirm_password': 'pass1234'})
     token = reg.json()['access_token']
     from app.core.security import decode_token
 

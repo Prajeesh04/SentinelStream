@@ -11,8 +11,8 @@ async def test_high_amount_triggers_decline():
 
     # Mock load_rules to return our test rules
     engine.load_rules = AsyncMock(return_value=[
-        {'field': 'amount', 'op': '>', 'val': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
-        {'field': 'merchant_category', 'op': '=', 'val': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
+        {'field': 'amount', 'operator': '>', 'threshold_value': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
+        {'field': 'merchant_category', 'operator': '=', 'threshold_value': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
     ])
 
     result = await engine.evaluate({'amount': 7500, 'merchant_category': 'retail'}, mock_db)
@@ -28,8 +28,8 @@ async def test_crypto_category_triggers_flag():
     mock_db = AsyncMock()
 
     engine.load_rules = AsyncMock(return_value=[
-        {'field': 'amount', 'op': '>', 'val': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
-        {'field': 'merchant_category', 'op': '=', 'val': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
+        {'field': 'amount', 'operator': '>', 'threshold_value': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
+        {'field': 'merchant_category', 'operator': '=', 'threshold_value': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
     ])
 
     result = await engine.evaluate({'amount': 100, 'merchant_category': 'cryptocurrency'}, mock_db)
@@ -45,7 +45,7 @@ async def test_normal_transaction_no_rule():
     mock_db = AsyncMock()
 
     engine.load_rules = AsyncMock(return_value=[
-        {'field': 'amount', 'op': '>', 'val': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
+        {'field': 'amount', 'operator': '>', 'threshold_value': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
     ])
 
     result = await engine.evaluate({'amount': 45, 'merchant_category': 'food'}, mock_db)
@@ -60,8 +60,8 @@ async def test_rule_priority_ordering():
 
     # high_amount (priority 10) should fire before crypto (priority 8) 
     engine.load_rules = AsyncMock(return_value=[
-        {'field': 'amount', 'op': '>', 'val': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
-        {'field': 'merchant_category', 'op': '=', 'val': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
+        {'field': 'amount', 'operator': '>', 'threshold_value': '5000', 'action': 'DECLINE', 'name': 'high_amount'},
+        {'field': 'merchant_category', 'operator': '=', 'threshold_value': 'cryptocurrency', 'action': 'FLAG', 'name': 'crypto_merchant'},
     ])
 
     result = await engine.evaluate({'amount': 7500, 'merchant_category': 'cryptocurrency'}, mock_db)
