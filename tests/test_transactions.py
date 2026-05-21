@@ -66,3 +66,45 @@ async def test_list_transactions(client):
         headers={'Authorization': f'Bearer {token}'})
     assert r.status_code == 200
     assert isinstance(r.json(), list)
+
+
+async def test_cannot_submit_transaction_for_another_user(client):
+    token_a, _user_id_a = await _register_and_get_token_and_uid(client)
+    _token_b, user_id_b = await _register_and_get_token_and_uid(client)
+    r = await client.post(
+        '/api/v1/transactions/',
+        headers={
+            'Authorization': f'Bearer {token_a}',
+            'Idempotency-Key': f'cross-{uuid.uuid4().hex[:8]}',
+        },
+        json={
+            'user_id': user_id_b,
+            'amount': 10.0,
+            'merchant_name': 'BadActor',
+        },
+    )
+    assert r.status_code == 403
+
+
+async def test_cannot_fetch_another_users_transaction(client):
+    token_a, user_id_a = await _register_and_get_token_and_uid(client)
+    token_b, _user_id_b = await _register_and_get_token_and_uid(client)
+    r1 = await client.post(
+        '/api/v1/transactions/',
+        headers={
+            'Authorization': f'Bearer {token_a}',
+            'Idempotency-Key': f'own-{uuid.uuid4().hex[:8]}',
+        },
+        json={
+            'user_id': user_id_a,
+            'amount': 33.0,
+            'merchant_name': 'Mine',
+        },
+    )
+    assert r1.status_code == 200
+    txn_id = r1.json()['transaction_id']
+    r2 = await client.get(
+        f'/api/v1/transactions/{txn_id}',
+        headers={'Authorization': f'Bearer {token_b}'},
+    )
+    assert r2.status_code == 403

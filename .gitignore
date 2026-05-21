@@ -14,3 +14,8 @@ ml/training_data.csv
 dist/
 build/
 *.egg-info/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+walkthrough.md

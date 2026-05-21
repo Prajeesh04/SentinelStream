@@ -8,14 +8,35 @@ TEST_DB = 'postgresql+asyncpg://postgres:password123@localhost:5432/sentinelstre
 
 
 def pytest_configure(config):
-    """Create tables before any tests run (sync context)."""
+    """Create tables before any tests run when PostgreSQL is reachable."""
+
     async def _create_tables():
         engine = create_async_engine(TEST_DB, echo=False)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
         await engine.dispose()
-    asyncio.run(_create_tables())
+
+    config._sentinel_test_db_ready = False
+    try:
+        asyncio.run(_create_tables())
+        config._sentinel_test_db_ready = True
+    except Exception as exc:
+        config._sentinel_test_db_error = repr(exc)
+
+
+def pytest_collection_modifyitems(config, items):
+    if getattr(config, '_sentinel_test_db_ready', False):
+        return
+    reason = (
+        'PostgreSQL test DB unreachable (sentinelstream_test @ localhost). '
+        'Start Postgres (e.g. docker compose up -d postgres) or see tests/conftest.py. '
+        f"Details: {getattr(config, '_sentinel_test_db_error', 'unknown')}"
+    )
+    skip = pytest.mark.skip(reason=reason)
+    for item in items:
+        if 'client' in getattr(item, 'fixturenames', ()):
+            item.add_marker(skip)
 
 
 @pytest.fixture

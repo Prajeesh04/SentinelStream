@@ -23,8 +23,8 @@ class RuleEngine:
         rules_dict = [
             {
                 'field': r.field_name,
-                'op': r.operator,
-                'val': r.threshold_value,
+                'operator': r.operator,
+                'threshold_value': r.threshold_value,
                 'action': r.action,
                 'name': r.name,
             }
@@ -41,22 +41,33 @@ class RuleEngine:
                 continue
             triggered = False
             try:
-                fv, rv = float(field_val), float(rule['val'])
-                if rule['op'] == '>':
-                    triggered = fv > rv
-                elif rule['op'] == '<':
-                    triggered = fv < rv
-                elif rule['op'] == '>=':
-                    triggered = fv >= rv
-                elif rule['op'] == '<=':
-                    triggered = fv <= rv
-                elif rule['op'] == '=':
-                    triggered = fv == rv
-                elif rule['op'] == '!=':
-                    triggered = fv != rv
+                field_value_float, threshold_value_float = float(field_val), float(rule['threshold_value'])
+                if rule['operator'] == '>':
+                    triggered = field_value_float > threshold_value_float
+                elif rule['operator'] == '<':
+                    triggered = field_value_float < threshold_value_float
+                elif rule['operator'] == '>=':
+                    triggered = field_value_float >= threshold_value_float
+                elif rule['operator'] == '<=':
+                    triggered = field_value_float <= threshold_value_float
+                elif rule['operator'] == '=':
+                    triggered = field_value_float == threshold_value_float
+                elif rule['operator'] == '!=':
+                    triggered = field_value_float != threshold_value_float
             except (ValueError, TypeError):
-                triggered = str(field_val).lower() == str(rule['val']).lower()
+                field_value_str = str(field_val).lower()
+                threshold_value_str = str(rule['threshold_value']).lower()
+                if rule['operator'] == '!=':
+                    triggered = field_value_str != threshold_value_str
+                else:
+                    triggered = field_value_str == threshold_value_str
             if triggered:
                 logger.info(f"Rule '{rule['name']}' triggered")
-                return {'name': rule['name'], 'action': rule['action']}
+                return {
+                    'name': rule['name'], 
+                    'action': rule['action'],
+                    'field': rule['field'],
+                    'operator': rule['operator'],
+                    'threshold_value': rule['threshold_value']
+                }
         return None

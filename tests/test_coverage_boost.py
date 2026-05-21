@@ -95,7 +95,47 @@ async def test_dashboard_stats_authenticated(client):
     email = f'dash_{uuid.uuid4().hex[:8]}@test.com'
     reg = await client.post('/api/v1/auth/register', json={'email': email, 'password': 'pass'})
     token = reg.json()['access_token']
+    from app.core.security import decode_token
+
+    user_id = decode_token(token)['sub']
+    other = await client.post(
+        '/api/v1/auth/register',
+        json={'email': f'other_{uuid.uuid4().hex[:8]}@test.com', 'password': 'pass'},
+    )
+    other_token = other.json()['access_token']
+    other_id = decode_token(other_token)['sub']
+
+    await client.post(
+        '/api/v1/transactions/',
+        headers={
+            'Authorization': f'Bearer {other_token}',
+            'Idempotency-Key': f'dash-other-{uuid.uuid4().hex[:8]}',
+        },
+        json={
+            'user_id': other_id,
+            'amount': 99.0,
+            'merchant_name': 'OtherUserShop',
+        },
+    )
+
     r = await client.get('/api/v1/dashboard/stats', headers={'Authorization': f'Bearer {token}'})
     assert r.status_code == 200
     data = r.json()
     assert 'total_transactions' in data
+    assert data['total_transactions'] == 0
+
+    await client.post(
+        '/api/v1/transactions/',
+        headers={
+            'Authorization': f'Bearer {token}',
+            'Idempotency-Key': f'dash-self-{uuid.uuid4().hex[:8]}',
+        },
+        json={
+            'user_id': user_id,
+            'amount': 12.0,
+            'merchant_name': 'MyShop',
+        },
+    )
+    r2 = await client.get('/api/v1/dashboard/stats', headers={'Authorization': f'Bearer {token}'})
+    assert r2.status_code == 200
+    assert r2.json()['total_transactions'] >= 1

@@ -22,6 +22,12 @@ async def submit_transaction(
 ):
     start = time.perf_counter()
 
+    if str(payload.user_id) != str(current_user.id) and current_user.role != 'admin':
+        raise HTTPException(
+            status_code=403,
+            detail='Cannot submit transactions for other users',
+        )
+
     # Get user profile (from cache or DB)
     user_profile = await get_user_profile(payload.user_id, db)
     if not user_profile:
@@ -55,7 +61,7 @@ async def submit_transaction(
 
     return TransactionResponse(
         transaction_id=txn.id, status=result.status,
-        risk_score=float(result.risk_score), reason=result.reason,
+        risk_score=float(result.risk_score), decline_reason=result.reason,
         rule_triggered=result.rule_triggered, processing_time_ms=ms,
     )
 
@@ -69,6 +75,8 @@ async def get_transaction(
     txn = await get_transaction_by_id(db, txn_id)
     if not txn:
         raise HTTPException(status_code=404, detail='Transaction not found')
+    if str(txn.user_id) != str(current_user.id) and current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail='Access denied')
     return txn
 
 

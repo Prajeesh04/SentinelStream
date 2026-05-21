@@ -1,10 +1,12 @@
+import os
+
 from celery import Celery
-from app.config import settings
 
 celery_app = Celery(
     'sentinelstream',
-    broker=settings.CELERY_BROKER_URL,
-    backend=settings.CELERY_RESULT_BACKEND,
+    broker=os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/1'),
+    backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/2'),
+    include=['app.workers.tasks']
 )
 celery_app.conf.update(
     task_serializer='json',
@@ -12,4 +14,7 @@ celery_app.conf.update(
     result_serializer='json',
     timezone='UTC',
     task_acks_late=True,
+    broker_connection_retry_on_startup=True,
+    broker_connection_retry=True,
+    broker_connection_max_retries=10,
 )
