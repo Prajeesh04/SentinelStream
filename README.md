@@ -118,6 +118,3 @@ sentinelstream/
 └── locustfile.py        # Load testing
 ```
 
-## License
-
-Zaalima Development — Python Elite Track
